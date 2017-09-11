@@ -64,7 +64,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Source.fs" />
+    <Compile Include="Solution.fs" />
+    <Compile Include="Project.fs" />
     <Compile Include="Versioning.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />

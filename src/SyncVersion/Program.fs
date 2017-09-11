@@ -30,10 +30,10 @@ let main argv =
   printfn "%s" result.Version
   printfn "%s" result.Solution
 
-  let projects = Source.Solution.GetProject result.Solution
+  let projects = Solution.getProject result.Solution
 
   projects 
-  |> Seq.collect (fun proj -> Source.Project.GetVersionFile proj)
+  |> Seq.collect (fun proj -> Project.getVersionFile proj)
   |> Seq.iter (fun source -> Versioning.update source result.Version)
 
   0
