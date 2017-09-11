@@ -2,6 +2,7 @@
   open System.IO
   open System.Text.RegularExpressions
   open Cli
+  open File
 
   type Replacing = {
     AssemblyVersionPattern : string
@@ -49,12 +50,18 @@
 
     ()
 
-  let update(sourceFile: string) (version: Version) =
+  let update(sourceFile: SourceFile) (version: Version) =
     
-    let ext = Path.GetExtension(sourceFile).ToLowerInvariant()
+    match sourceFile with
+    | Assembly path ->
+        let ext = Path.GetExtension(path).ToLowerInvariant()
+        match ext with
+        | ".cs" -> updateCore path version csReplacing
+        | ".fs" -> updateCore path version fsReplacing
+        | ".vb" -> updateCore path version vbReplacing
+        | _ -> ()
+
+    | Manifest path -> ()
+    | PList path -> ()
     
-    match ext with
-    | ".cs" -> updateCore sourceFile version csReplacing
-    | ".fs" -> updateCore sourceFile version fsReplacing
-    | ".vb" -> updateCore sourceFile version vbReplacing
-    | _ -> ()
+

@@ -2,6 +2,7 @@
   open System.IO
   open System.Xml.Linq
   open System.Xml.XPath
+  open File
 
   let getVersionFile(projectFile: string) =
 
@@ -18,12 +19,20 @@
       |> Seq.collect (fun g -> g.Elements <| XName.Get("Compile", ns))
       |> Seq.map (fun elm -> elm.Attribute <| XName.Get("Include"))
       |> Seq.filter (fun attr -> Path.GetFileNameWithoutExtension(attr.Value) = "AssemblyInfo")
-      |> Seq.map (fun attr -> Path.Combine(projectDirectory, attr.Value))
+      |> Seq.map (fun attr -> Assembly <| Path.Combine(projectDirectory, attr.Value))
 
     let manifests =
       let groups = project.Elements <| XName.Get("PropertyGroup", ns) 
       groups 
       |> Seq.collect (fun g -> g.Elements <| XName.Get("AndroidManifest", ns))
-      |> Seq.map (fun elm -> Path.Combine(projectDirectory, elm.Value))
+      |> Seq.map (fun elm -> Manifest <| Path.Combine(projectDirectory, elm.Value))
 
-    Seq.append assemblies manifests
+    let plists =
+      let groups = project.Elements <| XName.Get("ItemGroup", ns) 
+      groups 
+      |> Seq.collect (fun g -> g.Elements <| XName.Get("None", ns))
+      |> Seq.map (fun elm -> elm.Attribute <| XName.Get("Include"))
+      |> Seq.filter (fun attr -> Path.GetFileName(attr.Value) = "Info.plist")
+      |> Seq.map (fun attr -> PList <| Path.Combine(projectDirectory, attr.Value))
+
+    assemblies |> Seq.append manifests |> Seq.append plists
