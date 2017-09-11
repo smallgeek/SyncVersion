@@ -30,4 +30,6 @@ let main argv =
   printfn "%s" result.Version
   printfn "%s" result.Solution
 
+  printfn "%A" <| Source.Solution.GetProject result.Solution
+
   0
