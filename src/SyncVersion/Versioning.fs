@@ -1,6 +1,8 @@
 ﻿module Versioning
   open System.IO
   open System.Text.RegularExpressions
+  open System.Xml.Linq
+  open System.Xml.XPath
   open Cli
   open File
 
@@ -32,7 +34,7 @@
     FileVersionFormat = "<Assembly: AssemblyFileVersion(\"{0}\")>"
   }
 
-  let private updateCore(sourceFile: string) (version: Version) (replacing: Replacing) =
+  let private updateAssembly(sourceFile: string) (version: Version) (replacing: Replacing) =
     let regexMatch s pattern (version: string) format =
       let m = Regex.Match(s, pattern)
       if m.Success then
@@ -48,7 +50,20 @@
     
     File.WriteAllLines(sourceFile, newLines)
 
-    ()
+  let private updateManifest(sourceFile: string) (version: Version) =
+    let ns = "http://schemas.android.com/apk/res/android"
+
+    let versionCodeAttributeName = XName.Get("versionCode", ns)
+    let versionNameAttributeName = XName.Get("versionName", ns)
+
+    let doc = XDocument.Load(sourceFile)
+
+    let fileVersion = System.Version(version.File)
+    let code = fileVersion.Major * 10000 + fileVersion.Minor * 100 + fileVersion.Build
+
+    doc.Root.SetAttributeValue(versionCodeAttributeName, code)
+    doc.Root.SetAttributeValue(versionNameAttributeName, version.Assembly)
+    doc.Save(sourceFile)
 
   let update(sourceFile: SourceFile) (version: Version) =
     
@@ -56,12 +71,12 @@
     | Assembly path ->
         let ext = Path.GetExtension(path).ToLowerInvariant()
         match ext with
-        | ".cs" -> updateCore path version csReplacing
-        | ".fs" -> updateCore path version fsReplacing
-        | ".vb" -> updateCore path version vbReplacing
+        | ".cs" -> updateAssembly path version csReplacing
+        | ".fs" -> updateAssembly path version fsReplacing
+        | ".vb" -> updateAssembly path version vbReplacing
         | _ -> ()
 
-    | Manifest path -> ()
+    | Manifest path -> updateManifest path version
     | PList path -> ()
     
 
