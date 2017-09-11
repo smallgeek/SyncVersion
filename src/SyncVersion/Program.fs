@@ -4,7 +4,7 @@
 let main argv = 
   let result = parseArguments argv
 
-  printfn "%s" result.Version
+  printfn "%A" result.Version
   printfn "%s" result.Solution
 
   let projects = Solution.getProject result.Solution

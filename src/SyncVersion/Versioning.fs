@@ -1,6 +1,7 @@
 ﻿module Versioning
   open System.IO
   open System.Text.RegularExpressions
+  open Cli
 
   let csAssemblyVersionPattern = "^\[assembly: AssemblyVersion\(\"(?<version>.*?)\"\)\]$"
   let csAssemblyVersionFormat = "[assembly: AssemblyVersion(\"{0}\")]"
@@ -17,8 +18,8 @@
   let vbAssemblyFileVersionPattern = "^\<Assembly: AssemblyFileVersion\(\"(?<version>.*?)\"\)\>$"
   let vbAssemblyFileVersionFormat = "<Assembly: AssemblyFileVersion(\"{0}\")>"
 
-  let private updateCore(sourceFile: string) (version: string) (pattern: string) (replaceFormat: string) (filePattern: string) (replaceFileFormat: string) =
-    let regexMatch s pattern format =
+  let private updateCore(sourceFile: string) (version: Version) (pattern: string) (replaceFormat: string) (filePattern: string) (replaceFileFormat: string) =
+    let regexMatch s pattern (version: string) format =
       let m = Regex.Match(s, pattern)
       if m.Success then
         System.String.Format(format, version)
@@ -28,14 +29,14 @@
     let lines = File.ReadAllLines(sourceFile)
     let newLines =
       lines 
-      |> Seq.map (fun s -> regexMatch s pattern replaceFormat)
-      |> Seq.map (fun s -> regexMatch s filePattern replaceFormat)
+      |> Seq.map (fun s -> regexMatch s pattern version.Assembly replaceFormat)
+      |> Seq.map (fun s -> regexMatch s filePattern version.File replaceFormat)
     
     File.WriteAllLines(sourceFile, newLines)
 
     ()
 
-  let update(sourceFile: string) (version: string) =
+  let update(sourceFile: string) (version: Version) =
     
     let update' = updateCore sourceFile version
     let ext = Path.GetExtension(sourceFile).ToLowerInvariant()
