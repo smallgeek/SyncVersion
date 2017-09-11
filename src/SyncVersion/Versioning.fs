@@ -30,7 +30,7 @@
     let newLines =
       lines 
       |> Seq.map (fun s -> regexMatch s pattern version.Assembly replaceFormat)
-      |> Seq.map (fun s -> regexMatch s filePattern version.File replaceFormat)
+      |> Seq.map (fun s -> regexMatch s filePattern version.File replaceFileFormat)
     
     File.WriteAllLines(sourceFile, newLines)
 
