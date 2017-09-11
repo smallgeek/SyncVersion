@@ -34,6 +34,6 @@ let main argv =
 
   projects 
   |> Seq.collect (fun proj -> Source.Project.GetVersionFile proj)
-  |> Seq.iter (printfn "%s")
+  |> Seq.iter (fun source -> Versioning.update source result.Version)
 
   0
