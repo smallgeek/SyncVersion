@@ -65,6 +65,20 @@
     doc.Root.SetAttributeValue(versionNameAttributeName, version.Assembly)
     doc.Save(sourceFile)
 
+  let private updatePList(sourceFile: string) (version: Version) =
+    let doc = XDocument.Load(sourceFile)
+
+    let versionElement = doc.XPathSelectElement("plist/dict/key[string()='CFBundleVersion']")
+    let shortVersionElement = doc.XPathSelectElement("plist/dict/key[string()='CFBundleShortVersionString']")
+
+    let fileElement = versionElement.NextNode :?> XElement
+    let assemblyElement = shortVersionElement.NextNode :?> XElement
+
+    fileElement.Value <- version.File
+    assemblyElement.Value <- version.Assembly
+
+    doc.Save(sourceFile)
+
   let update(sourceFile: SourceFile) (version: Version) =
     
     match sourceFile with
@@ -77,6 +91,5 @@
         | _ -> ()
 
     | Manifest path -> updateManifest path version
-    | PList path -> ()
-    
+    | PList path -> updatePList path version
 
