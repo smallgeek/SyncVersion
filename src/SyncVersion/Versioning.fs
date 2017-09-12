@@ -42,13 +42,15 @@
       else
         s
 
-    let lines = File.ReadAllLines(sourceFile)
+    let encoding = File.detectEncoding sourceFile
+
+    let lines = File.ReadAllLines(sourceFile, encoding)
     let newLines =
       lines 
       |> Seq.map (fun s -> regexMatch s replacing.AssemblyVersionPattern version.Assembly replacing.AssemblyVersionFormat)
       |> Seq.map (fun s -> regexMatch s replacing.FileVersionPattern version.File replacing.FileVersionFormat)
     
-    File.WriteAllLines(sourceFile, newLines)
+    File.WriteAllLines(sourceFile, newLines, encoding)
 
   let private updateManifest(sourceFile: string) (version: Version) =
     let ns = "http://schemas.android.com/apk/res/android"
