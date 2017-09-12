@@ -65,7 +65,13 @@
 
     doc.Root.SetAttributeValue(versionCodeAttributeName, code)
     doc.Root.SetAttributeValue(versionNameAttributeName, version.Assembly)
-    doc.Save(sourceFile)
+
+    let writer = {
+      new StreamWriter(sourceFile) with
+        member x.Encoding = System.Text.UTF8Encoding(true) :> System.Text.Encoding
+    }
+
+    doc.Save(writer)
 
   let private updatePList(sourceFile: string) (version: Version) =
     let doc = XDocument.Load(sourceFile)
@@ -79,7 +85,12 @@
     fileElement.Value <- version.File
     assemblyElement.Value <- version.Assembly
 
-    doc.Save(sourceFile)
+    let writer = {
+      new StreamWriter(sourceFile) with
+        member x.Encoding = System.Text.UTF8Encoding(false) :> System.Text.Encoding
+    }
+
+    doc.Save(writer)
 
   let update(sourceFile: SourceFile) (version: Version) =
     
